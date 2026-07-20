@@ -13,8 +13,9 @@ Replace the TLA+ entry in your project's CLAUDE.md with:
 In a separate agent, keep the specs/ directory up to date using TLA+. This
 involves updating the .tla file whenever the architecture changes, then
 validating with the `tlc_check` MCP tool (pass the spec source and TLC
-config). The CLI fallback is `~/Code/tlc-rs/tools/tlc specs/Spec.tla
-specs/Spec.cfg`. The result is JSON:
+config). When a check passes, save the exact .tla and .cfg you used into
+specs/ so the passing configuration lives with the code. The CLI fallback is
+`~/Code/tlc-rs/tools/tlc specs/Spec.tla specs/Spec.cfg`. The result is JSON:
 
 - `.status == "ok"`: spec checked clean; note `.stats.distinctStates`.
 - `"invariant_violation"` / `"deadlock"`: read `.violation.trace` (shortest

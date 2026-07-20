@@ -114,10 +114,12 @@ export const LANDING_HTML = `<!doctype html>
   <pre><code id="copy-prompt">In a separate agent, keep specs/ up to date using TLA+ as you
 go. Update the .tla file whenever the architecture changes, then
 validate with the tlc_check MCP tool. Run this in the background
-so the main work never blocks. Keep specs finite: small CONSTANT
-sets, bounded ranges. On invariant_violation, read the trace and
-fix the design or the spec. On timeout, read the diagnostic hint
-and shrink constants.</code></pre>
+so the main work never blocks. When a check passes, save the
+exact .tla and .cfg you used into specs/ so the passing
+configuration lives with the code. Keep specs finite: small
+CONSTANT sets, bounded ranges. On invariant_violation, read the
+trace and fix the design or the spec. On timeout, read the
+diagnostic hint and shrink constants.</code></pre>
   <button class="copybtn" data-copy="copy-prompt" aria-label="Copy prompt"></button>
   </div>
   <p>Spec-writing tips that keep checks fast and meaningful:</p>
