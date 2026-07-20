@@ -1,5 +1,6 @@
-// Thin TypeScript shell: bearer auth + routing + JSON passthrough to the
-// tlc-core wasm module. All checking logic lives in Rust.
+// Thin TypeScript shell: routing + JSON passthrough to the tlc-core wasm
+// module. All checking logic lives in Rust. The service is open (no auth);
+// the engine self-limits every run, and Workers' cpu_ms cap is the backstop.
 
 // Workers' CompiledWasm rule imports a `WebAssembly.Module` (uninstantiated),
 // so wire the wasm-bindgen glue manually: instantiate against the glue's
@@ -16,29 +17,8 @@ bindgen.__wbg_set_wasm(instance.exports);
 (instance.exports as { __wbindgen_start?: () => void }).__wbindgen_start?.();
 const { parse, check } = bindgen;
 
-export interface Env {
-  API_TOKEN: string;
-}
-
-function unauthorized(): Response {
-  return Response.json(
-    { status: "unauthorized", errors: [{ code: "A0001", category: "auth", message: "missing or invalid bearer token" }] },
-    { status: 401 },
-  );
-}
-
-async function checkAuth(request: Request, env: Env): Promise<boolean> {
-  const header = request.headers.get("Authorization") ?? "";
-  const expected = `Bearer ${env.API_TOKEN}`;
-  if (header.length !== expected.length) return false;
-  const enc = new TextEncoder();
-  const a = enc.encode(header);
-  const b = enc.encode(expected);
-  return crypto.subtle.timingSafeEqual(a, b);
-}
-
 export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
+  async fetch(request: Request): Promise<Response> {
     const url = new URL(request.url);
     if (request.method === "GET" && (url.pathname === "/" || url.pathname === "/index.html")) {
       return new Response(LANDING_HTML, {
@@ -47,11 +27,10 @@ export default {
     }
     if (request.method !== "POST") {
       return Response.json(
-        { status: "bad_request", errors: [{ code: "R0002", category: "request", message: "POST /parse, /check, or /mcp — see GET / for docs" }] },
+        { status: "bad_request", errors: [{ code: "R0002", category: "request", message: "POST /parse, /check, or /mcp (see GET / for docs)" }] },
         { status: 405 },
       );
     }
-    if (!(await checkAuth(request, env))) return unauthorized();
 
     const body = await request.text();
 
@@ -76,4 +55,4 @@ export default {
     }
     return new Response(result, { headers: { "Content-Type": "application/json" } });
   },
-} satisfies ExportedHandler<Env>;
+} satisfies ExportedHandler;

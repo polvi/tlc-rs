@@ -8,7 +8,5 @@ node_modules
 # Generated wasm-bindgen output (built by tools/build_wasm.sh)
 worker/build/
 
-# Local service credential — never commit
-.tlc-api-token
 
 .DS_Store

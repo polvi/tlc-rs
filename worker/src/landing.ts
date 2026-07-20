@@ -1,4 +1,4 @@
-// Landing page served at GET / — no auth required (read-only, static).
+// Landing page served at GET /.
 
 export const LANDING_HTML = `<!doctype html>
 <html lang="en">
@@ -44,6 +44,10 @@ export const LANDING_HTML = `<!doctype html>
   }
   .fact b { display: block; font-size: 1.25rem; color: var(--accent); }
   .fact span { color: var(--dim); font-size: .82rem; }
+  table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: .9rem; }
+  td { border-top: 1px solid var(--border); padding: .45rem .5rem .45rem 0;
+    vertical-align: top; }
+  td:first-child { white-space: nowrap; padding-right: 1rem; }
   a { color: var(--accent); }
   .dim { color: var(--dim); }
   footer { margin-top: 4rem; color: var(--dim); font-size: .82rem;
@@ -53,80 +57,100 @@ export const LANDING_HTML = `<!doctype html>
 <body>
 <main>
   <h1><code>tlc.proc.io</code> — hosted TLA+ model checking</h1>
-  <p class="tag">A ground-up Rust rewrite of the TLA+ tools (SANY + TLC, safety
-  subset), compiled to a 509&nbsp;KB WebAssembly module and served from
-  Cloudflare's edge. No JVM. No install. An MCP server your coding agent can
-  call natively.</p>
+  <p class="tag">The TLA+ tools (SANY + TLC, safety subset) rewritten in Rust,
+  compiled to a 509&nbsp;KB WebAssembly module, and served from Cloudflare's
+  edge. Open to use, no keys, no install, no JVM. Point your coding agent at
+  it and get a formal-methods reviewer on tap.</p>
 
   <div class="fact-row">
     <div class="fact"><b>97/107</b><span>exact-parity conformance vs Java TLC
       (verdict, state counts, trace length)</span></div>
-    <div class="fact"><b>509 KB</b><span>whole checker as wasm — parser, level
-      checker, evaluator, BFS engine</span></div>
+    <div class="fact"><b>509 KB</b><span>the whole checker as wasm: parser,
+      level checker, evaluator, BFS engine</span></div>
     <div class="fact"><b>&le;30 s</b><span>self-limiting runs with a
       state-blowup diagnostic on timeout</span></div>
   </div>
 
   <h2>What it does</h2>
-  <p>You write a TLA+ specification of your system and a small config; the
+  <p>You write a TLA+ specification of your system and a small config. The
   service exhaustively explores every reachable state, checking your
   invariants and <code>[][A]_v</code> action properties on each transition.
-  If a property can be violated, you get the <em>shortest</em> counterexample
-  trace — the exact step-by-step scenario that breaks your design. If the
-  state space explodes, you get a per-level growth profile and a hint about
-  which constant to shrink, instead of a hung process.</p>
+  When a property can be violated, you get the <em>shortest</em>
+  counterexample trace (the exact step-by-step scenario that breaks your
+  design). When the state space grows too large, you get a per-level growth
+  profile and a hint about which constant to shrink.</p>
 
-  <h2>Use it from Claude (MCP)</h2>
-  <p>The service speaks the Model Context Protocol at <code>/mcp</code>
-  (Streamable HTTP, stateless). One command registers it in Claude Code:</p>
-  <pre><code>claude mcp add --scope user --transport http tlc \\
-  https://tlc.proc.io/mcp \\
-  --header "Authorization: Bearer $TLC_API_TOKEN"</code></pre>
-  <p>Two tools appear: <code>tlc_check</code> (full model check — pass the
-  module source and TLC config, get state counts, traces, diagnostics) and
-  <code>tlc_parse</code> (fast syntax + semantic + level check). Your agent
-  keeps the spec next to the code, updates it when the architecture changes,
-  and verifies every change in seconds — a formal-methods reviewer on tap.</p>
+  <h2>Start in one command (MCP)</h2>
+  <p>The service speaks the Model Context Protocol at <code>/mcp</code>.
+  Register it in Claude Code and two tools appear, <code>tlc_check</code> and
+  <code>tlc_parse</code>:</p>
+  <pre><code>claude mcp add --scope user --transport http tlc https://tlc.proc.io/mcp</code></pre>
+  <p>That's the whole setup. Ask your agent to model-check something and it
+  will call <code>tlc_check</code> with the spec source and TLC config
+  directly.</p>
 
-  <h2>Use it from anything else (REST)</h2>
+  <h2>Get the most out of it</h2>
+  <p>The high-leverage pattern is a standing instruction in your project's
+  CLAUDE.md (or equivalent) so the spec evolves with the code:</p>
+  <pre><code>Keep specs/ up to date using TLA+. Update the .tla file whenever
+the architecture changes, then validate with the tlc_check MCP
+tool. Keep specs finite: small CONSTANT sets, bounded ranges.
+On invariant_violation, read the trace and fix the design or the
+spec. On timeout, read the diagnostic hint and shrink constants.</code></pre>
+  <p>Spec-writing tips that keep checks fast and meaningful:</p>
+  <table>
+    <tr><td>Model sets of 1&ndash;3</td><td>Two users and one resource usually
+      expose the same interleavings as ten, at a fraction of the states.</td></tr>
+    <tr><td>Strings as statuses</td><td>Enumerated string states
+      (<code>"pending"</code>, <code>"active"</code>) keep specs readable and
+      compare fast.</td></tr>
+    <tr><td>TypeOK first</td><td>A type invariant catches most modeling
+      mistakes immediately and documents your state shape.</td></tr>
+    <tr><td>Action properties</td><td><code>[][A]_vars</code> properties
+      (say, "closed records stay closed") check per-transition claims that
+      invariants can't express.</td></tr>
+    <tr><td>CHECK_DEADLOCK FALSE</td><td>Set it when terminal states are
+      intentional, so quiescence reads as success.</td></tr>
+  </table>
+
+  <h2>REST, for everything else</h2>
   <pre><code>curl -s https://tlc.proc.io/check \\
-  -H "Authorization: Bearer $TLC_API_TOKEN" \\
   -H "Content-Type: application/json" \\
   -d '{"modules":[{"name":"Spec","source":"---- MODULE Spec ----\\n..."}],
        "config":"INIT Init\\nNEXT Next\\nINVARIANT TypeOK",
        "timeoutSeconds":30}'</code></pre>
-  <p>Response is JSON: <code>status</code> (<code>ok</code>,
+  <p>The response carries <code>status</code> (<code>ok</code>,
   <code>invariant_violation</code>, <code>deadlock</code>,
-  <code>timeout</code>, …), <code>stats</code>, a <code>violation.trace</code>
-  when something breaks, and a <code>diagnostic</code> with per-level state
-  growth when the space blows up.</p>
+  <code>timeout</code>, &hellip;), <code>stats</code>, a
+  <code>violation.trace</code> when something breaks, and a
+  <code>diagnostic</code> with per-level state growth when the space blows
+  up. <code>POST /parse</code> runs the fast syntax and level check alone.</p>
 
   <h2>Why this is cool</h2>
   <p>Model checkers have always meant "install a JVM, download a jar, babysit
-  a process." This one is a stateless function at the edge: the entire
-  checker — a hand-written parser faithful to SANY's column-sensitive
-  junction-list grammar, a value system whose 64-bit fingerprints are
-  bit-identical to Java TLC's, and a breadth-first search engine — boots in
-  microseconds inside a V8 isolate near you.</p>
-  <p>Correctness isn't asserted, it's measured: every build is differentially
+  a process." This one is a stateless function at the edge: a hand-written
+  parser faithful to SANY's column-sensitive junction-list grammar, a value
+  system whose 64-bit fingerprints are bit-identical to Java TLC's, and a
+  breadth-first search engine, all booting in microseconds inside a V8
+  isolate near you.</p>
+  <p>Correctness is measured, continuously: every build is differentially
   tested against the reference Java implementation on a mined conformance
-  suite, matching its verdicts, exact state counts, and counterexample depths.
-  Where the two disagree, the discrepancy is documented and traced to an
-  upstream bug, not shrugged off.</p>
-  <p>And because it's MCP, the checker composes with agents: "keep the spec in
-  sync with the architecture and prove my invariants still hold" becomes a
-  background loop, not a chore.</p>
+  suite, matching its verdicts, exact state counts, and counterexample
+  depths. And because the checker is one MCP tool call away, "prove my
+  invariants still hold" becomes part of an agent's inner loop, on every
+  architecture change, in the background.</p>
 
   <h2>Scope</h2>
   <p class="dim">Safety subset: invariants, deadlock, box-action properties
   (<code>[][A]_v</code>), CONSTANT/CONSTRAINT, model values, EXTENDS-based
   modules (Naturals, Integers, Sequences, FiniteSets, TLC, Bags built in).
-  Not supported: liveness/fairness, symmetry, parameterized INSTANCE,
-  ENABLED. Keep specs finite — small constant sets, bounded ranges.</p>
+  Liveness/fairness, symmetry, parameterized INSTANCE, and ENABLED are out of
+  scope for now. Keep specs finite: small constant sets, bounded ranges.</p>
 
-  <footer>Access requires a bearer token. Built in Rust from
+  <footer>Built in Rust from
   <a href="https://github.com/tlaplus/tlaplus">tlaplus/tlaplus</a> reference
-  semantics; checked differentially against TLC 2.19.</footer>
+  semantics; checked differentially against TLC 2.19. Runs are sandboxed and
+  self-limiting; specs are processed in memory and never stored.</footer>
 </main>
 </body>
 </html>`;
