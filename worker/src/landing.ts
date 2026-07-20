@@ -60,7 +60,8 @@ export const LANDING_HTML = `<!doctype html>
   <p class="tag">The TLA+ tools (SANY + TLC, safety subset) rewritten in Rust,
   compiled to a 509&nbsp;KB WebAssembly module, and served from Cloudflare's
   edge. Open to use, no keys, no install, no JVM. Point your coding agent at
-  it and get a formal-methods reviewer on tap.</p>
+  it and get a formal-methods reviewer on tap. Source on
+  <a href="https://github.com/polvi/tlc-rs">GitHub</a>.</p>
 
   <div class="fact-row">
     <div class="fact"><b>97/107</b><span>exact-parity conformance vs Java TLC
@@ -147,7 +148,9 @@ spec. On timeout, read the diagnostic hint and shrink constants.</code></pre>
   Liveness/fairness, symmetry, parameterized INSTANCE, and ENABLED are out of
   scope for now. Keep specs finite: small constant sets, bounded ranges.</p>
 
-  <footer>Built in Rust from
+  <footer>Source:
+  <a href="https://github.com/polvi/tlc-rs">github.com/polvi/tlc-rs</a>
+  (AGPL-3.0). Built in Rust from
   <a href="https://github.com/tlaplus/tlaplus">tlaplus/tlaplus</a> reference
   semantics; checked differentially against TLC 2.19. Runs are sandboxed and
   self-limiting; specs are processed in memory and never stored.</footer>
