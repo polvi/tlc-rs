@@ -1,7 +1,7 @@
 # tlc-rs
 
-A ground-up Rust reimplementation of the TLA+ tools — SANY's parser/level
-checker and TLC's finite-state safety model checker — built to run inside a
+A ground-up Rust reimplementation of the TLA+ tools (SANY's parser/level
+checker and TLC's finite-state safety model checker), built to run inside a
 Cloudflare Worker (wasm32) as a hosted checking service, with the same engine
 doubling as a native CLI.
 
@@ -14,15 +14,15 @@ No liveness/fairness, no symmetry, no simulation, no parameterized
 
 ## Layout
 
-- `crates/tlc-core` — the engine: lexer, parser (precedence-range climbing +
+- `crates/tlc-core`: the engine: lexer, parser (precedence-range climbing +
   column-aligned junction lists), semantic analysis, values/fingerprints,
   evaluator, BFS checker. No filesystem, threads, or clocks; wasm32-clean.
-- `crates/tlc-cli` — native CLI (`tlc-rs parse|check`).
-- `crates/tlc-diff` — differential-testing harness: runs Java TLC
+- `crates/tlc-cli`: native CLI (`tlc-rs parse|check`).
+- `crates/tlc-diff`: differential-testing harness: runs Java TLC
   (`-tool -workers 1 -fp 0`) as the oracle and compares results.
-- `worker/` — the Cloudflare Worker (TypeScript shell + wasm module).
-- `tests/corpus/` — vendored tree-sitter-style parser corpus (182 tests).
-- `tests/model/` — safety-only conformance cases mined from tlaplus
+- `worker/`: the Cloudflare Worker (TypeScript shell + wasm module).
+- `tests/corpus/`: vendored tree-sitter-style parser corpus (182 tests).
+- `tests/model/`: safety-only conformance cases mined from tlaplus
   `test-model/` (see `tools/mine_testmodel.sh`).
 
 ## Conformance

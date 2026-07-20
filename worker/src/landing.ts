@@ -5,7 +5,7 @@ export const LANDING_HTML = `<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>tlc.proc.io — hosted TLA+ model checking</title>
+<title>tlc.proc.io: hosted TLA+ model checking</title>
 <style>
   :root {
     --bg: #faf9f6; --fg: #1a1a1a; --dim: #6b6b6b; --accent: #0d5c4d;
@@ -56,11 +56,12 @@ export const LANDING_HTML = `<!doctype html>
 </head>
 <body>
 <main>
-  <h1><code>tlc.proc.io</code> — hosted TLA+ model checking</h1>
+  <h1><code>tlc.proc.io</code>: hosted TLA+ model checking</h1>
   <p class="tag">The TLA+ tools (SANY + TLC, safety subset) rewritten in Rust,
   compiled to a 509&nbsp;KB WebAssembly module, and served from Cloudflare's
-  edge. Open to use, no keys, no install, no JVM. Point your coding agent at
-  it and get a formal-methods reviewer on tap. Source on
+  edge. Open to everyone, ready to use from any HTTP client the moment you
+  find it. Point your coding agent at it and get a formal-methods reviewer
+  on tap. Source on
   <a href="https://github.com/polvi/tlc-rs">GitHub</a>.</p>
 
   <div class="fact-row">
