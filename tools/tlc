@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# tlc — check a TLA+ spec via the hosted tlc-rs service.
+#
+# Usage: tlc Spec.tla [Spec.cfg]
+# Env:   TLC_API_URL   (e.g. https://tlc.<account>.workers.dev)
+#        TLC_API_TOKEN (bearer token)
+#
+# Output is the service's JSON. Check .status; on invariant_violation read
+# .violation.trace; on timeout read .diagnostic.hint. Non-JSON output means
+# the service hit a hard platform limit.
+set -euo pipefail
+
+TLA="${1:?usage: tlc Spec.tla [Spec.cfg]}"
+CFG="${2:-${TLA%.tla}.cfg}"
+: "${TLC_API_URL:=https://tlc.alex-de7.workers.dev}"
+: "${TLC_API_TOKEN:?set TLC_API_TOKEN}"
+
+name="$(basename "$TLA" .tla)"
+
+jq -n --rawfile src "$TLA" --rawfile cfg "$CFG" --arg name "$name" \
+  '{modules: [{name: $name, source: $src}], config: $cfg, timeoutSeconds: 30, output: "both"}' \
+| curl -sf "$TLC_API_URL/check" \
+    -H "Authorization: Bearer $TLC_API_TOKEN" \
+    -H "Content-Type: application/json" \
+    -d @-

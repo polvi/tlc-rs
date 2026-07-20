@@ -1,0 +1,16 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "tlc",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-01",
+  // Headroom over the 30s user-facing max so the engine's internal deadline
+  // always fires before Cloudflare's uncatchable CPU kill (error 1102).
+  "limits": { "cpu_ms": 60000 },
+  "observability": { "enabled": true },
+  "build": {
+    "command": "bash ../tools/build_wasm.sh"
+  },
+  "rules": [
+    { "type": "CompiledWasm", "globs": ["**/*.wasm"], "fallthrough": true }
+  ]
+}
