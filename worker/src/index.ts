@@ -7,6 +7,7 @@
 import wasmModule from "../build/tlc_wasm_bg.wasm";
 import * as bindgen from "../build/tlc_wasm_bg.js";
 import { handleMcp } from "./mcp";
+import { LANDING_HTML } from "./landing";
 
 const instance = new WebAssembly.Instance(wasmModule, {
   "./tlc_wasm_bg.js": bindgen,
@@ -39,9 +40,14 @@ async function checkAuth(request: Request, env: Env): Promise<boolean> {
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
+    if (request.method === "GET" && (url.pathname === "/" || url.pathname === "/index.html")) {
+      return new Response(LANDING_HTML, {
+        headers: { "Content-Type": "text/html; charset=utf-8" },
+      });
+    }
     if (request.method !== "POST") {
       return Response.json(
-        { status: "bad_request", errors: [{ code: "R0002", category: "request", message: "POST /parse or POST /check" }] },
+        { status: "bad_request", errors: [{ code: "R0002", category: "request", message: "POST /parse, /check, or /mcp — see GET / for docs" }] },
         { status: 405 },
       );
     }

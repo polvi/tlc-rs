@@ -6,6 +6,8 @@
   // Headroom over the 30s user-facing max so the engine's internal deadline
   // always fires before Cloudflare's uncatchable CPU kill (error 1102).
   "limits": { "cpu_ms": 60000 },
+  "workers_dev": false,
+  "routes": [{ "pattern": "tlc.proc.io", "custom_domain": true }],
   "observability": { "enabled": true },
   "build": {
     "command": "bash ../tools/build_wasm.sh"

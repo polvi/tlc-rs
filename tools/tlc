@@ -12,7 +12,7 @@ set -euo pipefail
 
 TLA="${1:?usage: tlc Spec.tla [Spec.cfg]}"
 CFG="${2:-${TLA%.tla}.cfg}"
-: "${TLC_API_URL:=https://tlc.alex-de7.workers.dev}"
+: "${TLC_API_URL:=https://tlc.proc.io}"
 : "${TLC_API_TOKEN:?set TLC_API_TOKEN}"
 
 name="$(basename "$TLA" .tla)"

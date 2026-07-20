@@ -5,7 +5,7 @@ scope as `tlc` — tools `tlc_check` and `tlc_parse`), so the agent can call it
 natively without any shell wrapper. Re-register anytime with:
 
     claude mcp add --scope user --transport http tlc \
-      https://tlc.alex-de7.workers.dev/mcp \
+      https://tlc.proc.io/mcp \
       --header "Authorization: Bearer $(cat ~/Code/tlc-rs/.tlc-api-token)"
 
 Replace the TLA+ entry in your project's CLAUDE.md with:
@@ -18,7 +18,7 @@ validating with the hosted checker: call the `tlc_check` MCP tool with the
 spec source and TLC config (or use the CLI fallback
 `~/Code/tlc-rs/tools/tlc specs/Spec.tla specs/Spec.cfg`).
 
-(`tlc` is `~/Code/tlc-rs/tools/tlc`; service at https://tlc.alex-de7.workers.dev; token in `$TLC_API_TOKEN`, stored in `~/Code/tlc-rs/.tlc-api-token`.) The output is JSON:
+(`tlc` is `~/Code/tlc-rs/tools/tlc`; service at https://tlc.proc.io; token in `$TLC_API_TOKEN`, stored in `~/Code/tlc-rs/.tlc-api-token`.) The output is JSON:
 
 - `.status == "ok"` — spec checked clean; note `.stats.distinctStates`.
 - `"invariant_violation"` / `"deadlock"` — read `.violation.trace` (shortest
