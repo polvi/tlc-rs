@@ -1,15 +1,22 @@
 # Replacement CLAUDE.md entry
 
-Once the service is deployed, replace the current TLA+ entry in your project's
-CLAUDE.md with:
+The service is also an MCP server (already registered in Claude Code at user
+scope as `tlc` — tools `tlc_check` and `tlc_parse`), so the agent can call it
+natively without any shell wrapper. Re-register anytime with:
+
+    claude mcp add --scope user --transport http tlc \
+      https://tlc.alex-de7.workers.dev/mcp \
+      --header "Authorization: Bearer $(cat ~/Code/tlc-rs/.tlc-api-token)"
+
+Replace the TLA+ entry in your project's CLAUDE.md with:
 
 ---
 
 In a separate agent, keep the specs/ directory up to date using TLA+. This
 involves updating the .tla file whenever the architecture changes, then
-validating with the hosted checker:
-
-    tlc specs/Spec.tla specs/Spec.cfg
+validating with the hosted checker: call the `tlc_check` MCP tool with the
+spec source and TLC config (or use the CLI fallback
+`~/Code/tlc-rs/tools/tlc specs/Spec.tla specs/Spec.cfg`).
 
 (`tlc` is `~/Code/tlc-rs/tools/tlc`; service at https://tlc.alex-de7.workers.dev; token in `$TLC_API_TOKEN`, stored in `~/Code/tlc-rs/.tlc-api-token`.) The output is JSON:
 
