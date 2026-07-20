@@ -50,6 +50,19 @@ export const LANDING_HTML = `<!doctype html>
   td:first-child { white-space: nowrap; padding-right: 1rem; }
   a { color: var(--accent); }
   .dim { color: var(--dim); }
+  .copywrap { position: relative; }
+  .copywrap pre { padding-right: 3.2rem; }
+  .copybtn {
+    position: absolute; top: .55rem; right: .55rem;
+    display: inline-flex; align-items: center; gap: .3rem;
+    background: var(--card); color: var(--dim);
+    border: 1px solid var(--border); border-radius: 6px;
+    padding: .28rem .5rem; font: 500 .74rem/1 ui-sans-serif, system-ui, sans-serif;
+    cursor: pointer;
+  }
+  .copybtn:hover { color: var(--accent); border-color: var(--accent); }
+  .copybtn.copied { color: var(--accent); border-color: var(--accent); }
+  .copybtn svg { width: .85rem; height: .85rem; }
   footer { margin-top: 4rem; color: var(--dim); font-size: .82rem;
     border-top: 1px solid var(--border); padding-top: 1rem; }
 </style>
@@ -86,7 +99,10 @@ export const LANDING_HTML = `<!doctype html>
   <p>The service speaks the Model Context Protocol at <code>/mcp</code>.
   Register it in Claude Code and two tools appear, <code>tlc_check</code> and
   <code>tlc_parse</code>:</p>
-  <pre><code>claude mcp add --scope user --transport http tlc https://tlc.proc.io/mcp</code></pre>
+  <div class="copywrap">
+  <pre><code id="copy-mcp">claude mcp add --scope user --transport http tlc https://tlc.proc.io/mcp</code></pre>
+  <button class="copybtn" data-copy="copy-mcp" aria-label="Copy command"></button>
+  </div>
   <p>That's the whole setup. Ask your agent to model-check something and it
   will call <code>tlc_check</code> with the spec source and TLC config
   directly.</p>
@@ -94,11 +110,14 @@ export const LANDING_HTML = `<!doctype html>
   <h2>Get the most out of it</h2>
   <p>The high-leverage pattern is a standing instruction in your project's
   CLAUDE.md (or equivalent) so the spec evolves with the code:</p>
-  <pre><code>Keep specs/ up to date using TLA+. Update the .tla file whenever
+  <div class="copywrap">
+  <pre><code id="copy-prompt">Keep specs/ up to date using TLA+. Update the .tla file whenever
 the architecture changes, then validate with the tlc_check MCP
 tool. Keep specs finite: small CONSTANT sets, bounded ranges.
 On invariant_violation, read the trace and fix the design or the
 spec. On timeout, read the diagnostic hint and shrink constants.</code></pre>
+  <button class="copybtn" data-copy="copy-prompt" aria-label="Copy prompt"></button>
+  </div>
   <p>Spec-writing tips that keep checks fast and meaningful:</p>
   <table>
     <tr><td>Model sets of 1&ndash;3</td><td>Two users and one resource usually
@@ -191,5 +210,22 @@ spec. On timeout, read the diagnostic hint and shrink constants.</code></pre>
   semantics; checked differentially against TLC 2.19. Runs are sandboxed and
   self-limiting; specs are processed in memory and never stored.</footer>
 </main>
+<script>
+  const COPY_ICON = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10.5 5.5v-2a1.5 1.5 0 0 0-1.5-1.5H4A1.5 1.5 0 0 0 2.5 3.5V9A1.5 1.5 0 0 0 4 10.5h1.5"/></svg>';
+  const CHECK_ICON = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 8.5l3.5 3.5L13 5"/></svg>';
+  for (const btn of document.querySelectorAll(".copybtn")) {
+    btn.innerHTML = COPY_ICON + "<span>Copy</span>";
+    btn.addEventListener("click", async () => {
+      const text = document.getElementById(btn.dataset.copy).textContent;
+      await navigator.clipboard.writeText(text);
+      btn.classList.add("copied");
+      btn.innerHTML = CHECK_ICON + "<span>Copied</span>";
+      setTimeout(() => {
+        btn.classList.remove("copied");
+        btn.innerHTML = COPY_ICON + "<span>Copy</span>";
+      }, 1600);
+    });
+  }
+</script>
 </body>
 </html>`;
