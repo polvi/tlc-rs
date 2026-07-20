@@ -141,12 +141,47 @@ spec. On timeout, read the diagnostic hint and shrink constants.</code></pre>
   invariants still hold" becomes part of an agent's inner loop, on every
   architecture change, in the background.</p>
 
-  <h2>Scope</h2>
-  <p class="dim">Safety subset: invariants, deadlock, box-action properties
-  (<code>[][A]_v</code>), CONSTANT/CONSTRAINT, model values, EXTENDS-based
-  modules (Naturals, Integers, Sequences, FiniteSets, TLC, Bags built in).
-  Liveness/fairness, symmetry, parameterized INSTANCE, and ENABLED are out of
-  scope for now. Keep specs finite: small constant sets, bounded ranges.</p>
+  <h2>What's in, what's left out, and why</h2>
+  <p>This engine implements the <strong>safety subset</strong> of TLA+: the
+  full expression language, invariants, deadlock detection, box-action
+  properties (<code>[][A]_v</code>), CONSTANT assignments with model values,
+  CONSTRAINT/ACTION_CONSTRAINT, and EXTENDS-based modules (Naturals,
+  Integers, Sequences, FiniteSets, TLC, and Bags are built in). That subset
+  was chosen deliberately: it covers what agent-written specs of real systems
+  actually use (state machines, type invariants, "closed things stay closed"
+  claims), and every feature in it is verified against Java TLC exactly.</p>
+  <p>Left out, and the reasoning:</p>
+  <table>
+    <tr><td>Liveness &amp; fairness</td><td>Checking <code>&lt;&gt;P</code> or
+      <code>WF_v(A)</code> requires a tableau construction and cycle detection
+      over the full behavior graph, a second engine roughly the size of this
+      one. Safety questions ("can this bad thing ever happen?") are where
+      agent workflows get their value.</td></tr>
+    <tr><td>Parameterized INSTANCE</td><td>Module instantiation with
+      substitutions (<code>I == INSTANCE M WITH x &lt;- y</code>,
+      <code>I!op</code>) brings in SANY's largest single subsystem. Plain
+      <code>EXTENDS</code> composition covers the common case; this is the
+      most likely next addition.</td></tr>
+    <tr><td>ENABLED</td><td>Deciding whether an action could fire requires a
+      nested successor search inside expression evaluation. Contained, and on
+      the shortlist.</td></tr>
+    <tr><td>Symmetry sets</td><td>A performance optimization (quotienting the
+      state space by permutations), and one that changes reported state
+      counts. Small finite models rarely need it.</td></tr>
+    <tr><td>Proof syntax</td><td><code>THEOREM ... PROOF</code> and
+      ASSUME/PROVE belong to TLAPS, the proof system. A model checker only
+      needs the propositions.</td></tr>
+    <tr><td>Reals, RandomElement</td><td>Real arithmetic is unenumerable, and
+      randomized operators give different answers run to run, which conflicts
+      with this project's exact-parity standard.</td></tr>
+  </table>
+  <p>The 97/107 conformance figure reads accordingly: 97 cases match Java TLC
+  exactly, zero cases mismatch, and the remaining 10 exercise the features
+  above. The engine recognizes them and returns a clean
+  <code>unsupported_feature</code> status (with the local
+  <code>tla2tools.jar</code> as the documented fallback) rather than a wrong
+  answer. Keep specs finite (small constant sets, bounded ranges) and the
+  supported subset is a complete, trustworthy checker.</p>
 
   <footer>Source:
   <a href="https://github.com/polvi/tlc-rs">github.com/polvi/tlc-rs</a>
