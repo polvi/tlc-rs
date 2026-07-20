@@ -111,11 +111,13 @@ export const LANDING_HTML = `<!doctype html>
   <p>The high-leverage pattern is a standing instruction in your project's
   CLAUDE.md (or equivalent) so the spec evolves with the code:</p>
   <div class="copywrap">
-  <pre><code id="copy-prompt">Keep specs/ up to date using TLA+. Update the .tla file whenever
-the architecture changes, then validate with the tlc_check MCP
-tool. Keep specs finite: small CONSTANT sets, bounded ranges.
-On invariant_violation, read the trace and fix the design or the
-spec. On timeout, read the diagnostic hint and shrink constants.</code></pre>
+  <pre><code id="copy-prompt">In a separate agent, keep specs/ up to date using TLA+ as you
+go. Update the .tla file whenever the architecture changes, then
+validate with the tlc_check MCP tool. Run this in the background
+so the main work never blocks. Keep specs finite: small CONSTANT
+sets, bounded ranges. On invariant_violation, read the trace and
+fix the design or the spec. On timeout, read the diagnostic hint
+and shrink constants.</code></pre>
   <button class="copybtn" data-copy="copy-prompt" aria-label="Copy prompt"></button>
   </div>
   <p>Spec-writing tips that keep checks fast and meaningful:</p>
